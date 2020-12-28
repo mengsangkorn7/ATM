@@ -1,35 +1,23 @@
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-public class User {
+public class User<global> {
 
     private String firstName;
     private String lastName;
     private String uuid;                    // User ID
-    private byte pinHash[];                 // MD5 of user's PIN number
+    //private byte pinHash[];
+    private String pinHash;
     private ArrayList<Account> accounts;    // list of accounts for this user
 
-    /**
-     * Create a new user
-     * @param firstName the user's first name
-     * @param lastName  the user's last name
-     * @param pin       the user's account pin number
-     * @param theBank   Bank object that the user is a customer of
-     */
+    SHA512Hasher sha512 = new SHA512Hasher();
+    //MD5 md5 = new MD5();
 
     public User(String firstName, String lastName, String pin , Bank theBank) {
         this.firstName = firstName;
         this.lastName = lastName;
 
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            this.pinHash = md.digest(pin.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("error, caught NoSuchAlgorithmException");
-            e.printStackTrace();
-            System.exit(1);
-        }
+        //this.pinHash = md5.hash(pin);
+        this.pinHash = sha512.hash(pin);
 
         // get user's Pin number/uuid
         this.uuid = theBank.getNewUserUUID();
@@ -50,26 +38,13 @@ public class User {
         return this.uuid;
     }
 
-    /*
-     * Check whether a given pin match the true user pin
-     * @param aPin  the pin to check
-     * @return      whether the pin is a valid one
-     */
 
     public boolean validatePin(String aPin) {
+        //return md5.checkPassword(this.pinHash, aPin);
+        return sha512.checkPassword(this.pinHash, aPin);
 
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            return MessageDigest.isEqual(md.digest(aPin.getBytes()),
-                this.pinHash);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("error, caught NoSuchAlgorithmException");
-            e.printStackTrace();
-            System.exit(1);
-        }
-
-        return false;
     }
+
 
     public String getFirstName(){
         return this.firstName;
@@ -108,4 +83,6 @@ public class User {
     public void addAcctTransaction(int accIdx, double amount, String memo) {
        this.accounts.get(accIdx).addTransaction(amount, memo);
     }
+
+
 }
